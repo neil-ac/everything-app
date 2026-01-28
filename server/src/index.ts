@@ -6,36 +6,57 @@ import server from "./server.js";
 import { fileURLToPath } from "url";
 import path from "path";
 import cors from "cors";
+import * as readline from "readline";
 
-const app = express() as Express & { vite: ViteDevServer };
+async function promptUser(question: string): Promise<string> {
+  const rl = readline.createInterface({
+    input: process.stdin,
+    output: process.stdout,
+  });
 
-app.use(express.json());
-
-app.use(mcp(server));
-
-const env = process.env.NODE_ENV || "development";
-
-if (env !== "production") {
-  const { devtoolsStaticServer } = await import("@skybridge/devtools");
-  app.use(await devtoolsStaticServer());
-  app.use(await widgetsDevServer());
+  return new Promise((resolve) => {
+    rl.question(question, (answer) => {
+      rl.close();
+      resolve(answer);
+    });
+  });
 }
 
+async function startServer() {
+  const userInput = await promptUser("Enter your name to start the server: ");
+  console.log(`Hello, ${userInput}! Starting server...`);
 
-if (env === "production") {
-  const __filename = fileURLToPath(import.meta.url);
-  const __dirname = path.dirname(__filename);
+  const app = express() as Express & { vite: ViteDevServer };
 
-  app.use("/assets", cors());
-  app.use("/assets", express.static(path.join(__dirname, "assets")));
-}
+  app.use(express.json());
 
-app.listen(3000, (error) => {
-  if (error) {
-    console.error("Failed to start server:", error);
-    process.exit(1);
+  app.use(mcp(server));
+
+  const env = process.env.NODE_ENV || "development";
+
+  if (env !== "production") {
+    const { devtoolsStaticServer } = await import("@skybridge/devtools");
+    app.use(await devtoolsStaticServer());
+    app.use(await widgetsDevServer());
   }
-});
+
+  if (env === "production") {
+    const __filename = fileURLToPath(import.meta.url);
+    const __dirname = path.dirname(__filename);
+
+    app.use("/assets", cors());
+    app.use("/assets", express.static(path.join(__dirname, "assets")));
+  }
+
+  app.listen(3000, (error) => {
+    if (error) {
+      console.error("Failed to start server:", error);
+      process.exit(1);
+    }
+  });
+}
+
+startServer();
 
 process.on("SIGINT", async () => {
   console.log("Server shutdown complete");
