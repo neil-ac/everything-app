@@ -60,7 +60,7 @@ function Widget() {
   // modal content need to be set at root
   // opening is triggered by UseRequestModalTab
   if (isOpen) {
-    let message = "No message provided!";
+    let message = "No message provided!!";
     if (typeof params?.message === "string") {
       message = params.message;
     }
