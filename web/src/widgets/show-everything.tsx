@@ -1,7 +1,9 @@
 import "@/index.css";
 
-import { useState } from "react";
-import { mountWidget, useOpenExternal, useRequestModal } from "skybridge/web";
+import { useCallback, useEffect, useRef, useState } from "react";
+import { mountWidget, useDisplayMode, useLayout, useOpenExternal, useRequestModal, useUser } from "skybridge/web";
+import { useToolInfo } from "../helpers";
+import { useWidgetState } from "skybridge/web";
 import { CreateStoreTab } from "./tabs/create-store-tab";
 import { DataLlmTab } from "./tabs/data-llm-tab";
 import { ImageTab } from "./tabs/image-tab";
@@ -54,6 +56,136 @@ function Widget() {
   const [tab, setTab] = useState<Tab>("Home");
   const openExternal = useOpenExternal();
   const { isOpen, params } = useRequestModal();
+  
+  // Collect context for logging on interactions
+  const layout = useLayout();
+  const user = useUser();
+  const [displayMode] = useDisplayMode();
+  const toolInfo = useToolInfo<"show-everything">();
+  const [widgetState] = useWidgetState({});
+  const rawContext = (window as any).__SKYBRIDGE_CONTEXT__ || (window as any).__APPS_SDK_CONTEXT__ || (window as any).openai;
+
+  // Collect current context
+  const getCurrentContext = useCallback(() => {
+    return {
+      displayMode,
+      maxWidth: (layout as any).maxWidth || rawContext?.maxWidth,
+      maxHeight: (layout as any).maxHeight || rawContext?.maxHeight,
+      theme: (layout as any).theme || layout.theme,
+      locale: user.locale,
+      userAgent: user.userAgent,
+      isSidebarOpen: rawContext?.isSidebarOpen,
+      widget: {
+        state: widgetState,
+        props: toolInfo.output as Record<string, unknown> | undefined,
+      },
+      toolInput: toolInfo.input,
+      toolOutput: toolInfo.output,
+      toolResponseMetadata: toolInfo.responseMetadata,
+      widgetState,
+      subjectId: rawContext?.subjectId,
+      view: (layout as any).view || rawContext?.view || {
+        params: (layout as any).view?.params || rawContext?.viewParams,
+        mode: displayMode,
+      },
+      safeArea: (layout as any).safeArea || rawContext?.safeArea,
+    };
+  }, [displayMode, layout, user, toolInfo, widgetState, rawContext]);
+
+  // Log widget initialization with full context
+  const hasInitializedRef = useRef(false);
+  useEffect(() => {
+    if (!hasInitializedRef.current) {
+      hasInitializedRef.current = true;
+      // Use a small timeout to ensure all hooks have settled
+      setTimeout(() => {
+        const context = getCurrentContext();
+        const timestamp = new Date().toISOString();
+        const timeStr = timestamp.split("T")[1].split(".")[0];
+        
+        console.group(`🚀 Widget Initialized - ${timeStr}`);
+        console.log("Initialization Context (values passed by host to initialize widget):", JSON.stringify(context, null, 2));
+        console.log("Initialization Context (object):", context);
+        console.log("Raw window context (window.openai / __SKYBRIDGE_CONTEXT__):", rawContext);
+        console.groupEnd();
+      }, 0);
+    }
+  }, [getCurrentContext, rawContext]);
+
+  // Log when tools are called by the LLM
+  const prevToolInputRef = useRef(toolInfo.input);
+  const prevToolOutputRef = useRef(toolInfo.output);
+  const prevIsPendingRef = useRef(toolInfo.isPending);
+  
+  useEffect(() => {
+    // Detect when a new tool call starts (isPending changes from false to true)
+    if (toolInfo.isPending && !prevIsPendingRef.current) {
+      const context = getCurrentContext();
+      const timestamp = new Date().toISOString();
+      const timeStr = timestamp.split("T")[1].split(".")[0];
+      
+      console.group(`🔧 Tool Call Started by LLM - ${timeStr}`);
+      console.log("Tool Input:", toolInfo.input);
+      console.log("Full Context:", JSON.stringify(context, null, 2));
+      console.log("Full Context (object):", context);
+      console.groupEnd();
+    }
+    
+    // Detect when a tool call completes (isPending changes from true to false, or output changes)
+    const outputChanged = toolInfo.output && JSON.stringify(toolInfo.output) !== JSON.stringify(prevToolOutputRef.current);
+    if ((!toolInfo.isPending && prevIsPendingRef.current) || outputChanged) {
+      const context = getCurrentContext();
+      const timestamp = new Date().toISOString();
+      const timeStr = timestamp.split("T")[1].split(".")[0];
+      
+      console.group(`✅ Tool Call Completed by LLM - ${timeStr}`);
+      console.log("Tool Input:", toolInfo.input);
+      console.log("Tool Output:", toolInfo.output);
+      console.log("Tool Response Metadata:", toolInfo.responseMetadata);
+      console.log("Full Context:", JSON.stringify(context, null, 2));
+      console.log("Full Context (object):", context);
+      console.groupEnd();
+    }
+    
+    prevToolInputRef.current = toolInfo.input;
+    prevToolOutputRef.current = toolInfo.output;
+    prevIsPendingRef.current = toolInfo.isPending;
+  }, [toolInfo.input, toolInfo.output, toolInfo.responseMetadata, toolInfo.isPending, getCurrentContext]);
+
+  // Expose context globally for easy console access
+  useEffect(() => {
+    (window as any).__SKYBRIDGE_DEBUG_CONTEXT__ = getCurrentContext;
+    (window as any).__SKYBRIDGE_DEBUG_LOG__ = () => {
+      const context = getCurrentContext();
+      console.log("📋 Current Skybridge Context:", JSON.stringify(context, null, 2));
+      console.log("📋 Current Skybridge Context (object):", context);
+      return context;
+    };
+  }, [getCurrentContext]);
+
+  // // Log context on every user interaction
+  // useEffect(() => {
+  //   const logContext = () => {
+  //     const context = getCurrentContext();
+  //     const timestamp = new Date().toISOString().split("T")[1].split(".")[0];
+  //     console.group(`👆 Interaction - ${timestamp}`);
+  //     console.log("Skybridge Context:", JSON.stringify(context, null, 2));
+  //     console.log("Skybridge Context (object):", context);
+  //     console.groupEnd();
+  //   };
+
+  //   // Log on clicks, keypresses, and other interactions
+  //   const events = ["click", "keydown", "change", "input", "focus"];
+  //   events.forEach((event) => {
+  //     document.addEventListener(event, logContext, true);
+  //   });
+
+  //   return () => {
+  //     events.forEach((event) => {
+  //       document.removeEventListener(event, logContext, true);
+  //     });
+  //   };
+  // }, [getCurrentContext]);
 
   const { docPath, Component } = TABS[tab];
 
