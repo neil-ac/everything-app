@@ -17,6 +17,7 @@ import { UseSendFollowUpMessageTab } from "./tabs/use-send-follow-up-message-tab
 import { UseSetOpenInAppUrlTab } from "./tabs/use-set-open-in-app-url";
 import { UseUserTab } from "./tabs/use-user-tab";
 import { UseWidgetStateTab } from "./tabs/use-widget-state-tab";
+import { ContextDebugTab } from "./tabs/context-debug-tab";
 
 const TABS = {
   Home: { docPath: "", Component: HomeTab },
@@ -46,6 +47,7 @@ const TABS = {
   useToolInfo: { docPath: "use-tool-info", Component: ToolInfoTab },
   useUser: { docPath: "use-user", Component: UseUserTab },
   useWidgetState: { docPath: "use-widget-state", Component: UseWidgetStateTab },
+  "🔍 Context Debug": { docPath: "", Component: ContextDebugTab },
 };
 
 type Tab = keyof typeof TABS;
@@ -60,7 +62,7 @@ function Widget() {
   // modal content need to be set at root
   // opening is triggered by UseRequestModalTab
   if (isOpen) {
-    let message = "No message provided";
+    let message = "No message provided!!!";
     if (typeof params?.message === "string") {
       message = params.message;
     }
