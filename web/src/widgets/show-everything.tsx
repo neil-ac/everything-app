@@ -4,7 +4,6 @@ import { useState } from "react";
 import { mountWidget, useOpenExternal, useRequestModal } from "skybridge/web";
 import { CreateStoreTab } from "./tabs/create-store-tab";
 import { DataLlmTab } from "./tabs/data-llm-tab";
-import { HomeTab } from "./tabs/home-tab";
 import { ImageTab } from "./tabs/image-tab";
 import { ToolInfoTab } from "./tabs/tool-info-tab";
 import { UseCallToolTab } from "./tabs/use-call-tool-tab";
@@ -20,7 +19,7 @@ import { UseWidgetStateTab } from "./tabs/use-widget-state-tab";
 import { ContextDebugTab } from "./tabs/context-debug-tab";
 
 const TABS = {
-  Home: { docPath: "", Component: HomeTab },
+  Home: { docPath: "", Component: ContextDebugTab },
   createStore: { docPath: "create-store", Component: CreateStoreTab },
   "data-llm": { docPath: "data-llm", Component: DataLlmTab },
   image: { docPath: "image", Component: ImageTab },
@@ -47,7 +46,6 @@ const TABS = {
   useToolInfo: { docPath: "use-tool-info", Component: ToolInfoTab },
   useUser: { docPath: "use-user", Component: UseUserTab },
   useWidgetState: { docPath: "use-widget-state", Component: UseWidgetStateTab },
-  "🔍 Context Debug": { docPath: "", Component: ContextDebugTab },
 };
 
 type Tab = keyof typeof TABS;
