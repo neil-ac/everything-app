@@ -104,31 +104,31 @@ export function ContextDebugTab() {
   };
 
   // Capture initial value once
-  if (initialRef.current === null) {
-    initialRef.current = structuredClone(allValues);
-    console.log("🟢 INITIAL Skybridge Context:", JSON.stringify(allValues, null, 2));
-    console.log("🟢 INITIAL Skybridge Context (object):", allValues);
-  }
+  // if (initialRef.current === null) {
+  //   initialRef.current = structuredClone(allValues);
+  //   console.log("🟢 INITIAL Skybridge Context:", JSON.stringify(allValues, null, 2));
+  //   console.log("🟢 INITIAL Skybridge Context (object):", allValues);
+  // }
 
-  // Track all updates and log on every interaction
-  useEffect(() => {
-    const timestamp = new Date().toISOString();
-    const timeStr = timestamp.split("T")[1].split(".")[0];
+  // // Track all updates and log on every interaction
+  // useEffect(() => {
+  //   const timestamp = new Date().toISOString();
+  //   const timeStr = timestamp.split("T")[1].split(".")[0];
     
-    // Log to console with nice formatting
-    console.group(`🔄 Skybridge Context Update - ${timeStr}`);
-    console.log("Full Context:", JSON.stringify(allValues, null, 2));
-    console.log("Context Object:", allValues);
-    console.groupEnd();
+  //   // Log to console with nice formatting
+  //   console.group(`🔄 Skybridge Context Update - ${timeStr}`);
+  //   console.log("Full Context:", JSON.stringify(allValues, null, 2));
+  //   console.log("Context Object:", allValues);
+  //   console.groupEnd();
     
-    // Call global logger if set
-    if (contextLogger) {
-      contextLogger(allValues);
-    }
+  //   // Call global logger if set
+  //   if (contextLogger) {
+  //     contextLogger(allValues);
+  //   }
     
-    // Update history
-    setHistory((h) => [...h.slice(-9), { time: timeStr, value: structuredClone(allValues) }]);
-  }, [JSON.stringify(allValues)]);
+  //   // Update history
+  //   setHistory((h) => [...h.slice(-9), { time: timeStr, value: structuredClone(allValues) }]);
+  // }, [JSON.stringify(allValues)]);
 
   return (
     <div className="tab-content">
