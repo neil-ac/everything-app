@@ -105,7 +105,7 @@ function Widget() {
         
         console.group(`🚀 Widget Initialized - ${timeStr}`);
         console.log("Initialization Context (values passed by host to initialize widget):", JSON.stringify(context, null, 2));
-        console.log("Initialization Context (object) :", context);
+        console.log("Initialization Context (object):", context);
         console.log("Raw window context (window.openai / __SKYBRIDGE_CONTEXT__):", rawContext);
         console.groupEnd();
       }, 0);
