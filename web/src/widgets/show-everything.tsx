@@ -105,21 +105,31 @@ function Widget() {
         
         console.group(`🚀 Widget Initialized - ${timeStr}`);
         console.log("Initialization Context (values passed by host to initialize widget):", JSON.stringify(context, null, 2));
-        console.log("Initialization Context (object):", context);
+        console.log("Initialization Context (object) :", context);
         console.log("Raw window context (window.openai / __SKYBRIDGE_CONTEXT__):", rawContext);
         console.groupEnd();
       }, 0);
     }
   }, [getCurrentContext, rawContext]);
 
+  const serializeForCompare = (value: unknown) => {
+    try {
+      return JSON.stringify(value);
+    } catch {
+      return String(value);
+    }
+  };
+
   // Log when tools are called by the LLM
-  const prevToolInputRef = useRef(toolInfo.input);
+  const prevToolInputRef = useRef(serializeForCompare(toolInfo.input));
   const prevToolOutputRef = useRef(toolInfo.output);
   const prevIsPendingRef = useRef(toolInfo.isPending);
   
   useEffect(() => {
+    const inputSnapshot = serializeForCompare(toolInfo.input);
+
     // Detect when a new tool call starts (isPending changes from false to true)
-    if (toolInfo.isPending && !prevIsPendingRef.current) {
+    if (toolInfo.isPending || (inputSnapshot !== prevToolInputRef.current)) {
       const context = getCurrentContext();
       const timestamp = new Date().toISOString();
       const timeStr = timestamp.split("T")[1].split(".")[0];
@@ -147,7 +157,7 @@ function Widget() {
       console.groupEnd();
     }
     
-    prevToolInputRef.current = toolInfo.input;
+    prevToolInputRef.current = inputSnapshot;
     prevToolOutputRef.current = toolInfo.output;
     prevIsPendingRef.current = toolInfo.isPending;
   }, [toolInfo.input, toolInfo.output, toolInfo.responseMetadata, toolInfo.isPending, getCurrentContext]);

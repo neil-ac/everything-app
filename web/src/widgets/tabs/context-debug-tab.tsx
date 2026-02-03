@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from "react";
+import { useRef, useState } from "react";
 import { useDisplayMode, useLayout, useUser } from "skybridge/web";
 import { useToolInfo } from "../../helpers";
 import { useWidgetState } from "skybridge/web";
@@ -64,7 +64,7 @@ export function ContextDebugTab() {
   const [widgetState] = useWidgetState({});
 
   const initialRef = useRef<SkybridgeContext | null>(null);
-  const [history, setHistory] = useState<Array<{ time: string; value: SkybridgeContext }>>([]);
+  const [history] = useState<Array<{ time: string; value: SkybridgeContext }>>([]);
   const [showFullContext, setShowFullContext] = useState(false);
 
   // Try to access the raw context or window globals that ChatGPT sets
