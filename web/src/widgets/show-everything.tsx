@@ -173,29 +173,29 @@ function Widget() {
     };
   }, [getCurrentContext]);
 
-  // // Log context on every user interaction
-  // useEffect(() => {
-  //   const logContext = () => {
-  //     const context = getCurrentContext();
-  //     const timestamp = new Date().toISOString().split("T")[1].split(".")[0];
-  //     console.group(`👆 Interaction - ${timestamp}`);
-  //     console.log("Skybridge Context:", JSON.stringify(context, null, 2));
-  //     console.log("Skybridge Context (object):", context);
-  //     console.groupEnd();
-  //   };
+  // Log context on every user interaction
+  useEffect(() => {
+    const logContext = () => {
+      const context = getCurrentContext();
+      const timestamp = new Date().toISOString().split("T")[1].split(".")[0];
+      console.group(`👆 Interaction - ${timestamp}`);
+      console.log("Skybridge Context:", JSON.stringify(context, null, 2));
+      console.log("Skybridge Context (object):", context);
+      console.groupEnd();
+    };
 
-  //   // Log on clicks, keypresses, and other interactions
-  //   const events = ["click", "keydown", "change", "input", "focus"];
-  //   events.forEach((event) => {
-  //     document.addEventListener(event, logContext, true);
-  //   });
+    // Log on clicks, keypresses, and other interactions
+    const events = ["click", "keydown", "change", "input", "focus"];
+    events.forEach((event) => {
+      document.addEventListener(event, logContext, true);
+    });
 
-  //   return () => {
-  //     events.forEach((event) => {
-  //       document.removeEventListener(event, logContext, true);
-  //     });
-  //   };
-  // }, [getCurrentContext]);
+    return () => {
+      events.forEach((event) => {
+        document.removeEventListener(event, logContext, true);
+      });
+    };
+  }, [getCurrentContext]);
 
   const { docPath, Component } = TABS[tab];
 
