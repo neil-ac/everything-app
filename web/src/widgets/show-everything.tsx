@@ -60,7 +60,7 @@ function Widget() {
   // Collect context for logging on interactions
   const layout = useLayout();
   const user = useUser();
-  const [displayMode] = useDisplayMode();
+  const [displayMode, setDisplayMode] = useDisplayMode();
   const toolInfo = useToolInfo<"show-everything">();
   const [widgetState, setWidgetState] = useWidgetState({ count: 0 });
   const rawContext = (window as any).__SKYBRIDGE_CONTEXT__ || (window as any).__APPS_SDK_CONTEXT__ || (window as any).openai;
@@ -207,6 +207,7 @@ function Widget() {
       message = params.message;
     }
     const currentCount = (widgetState as { count?: number }).count ?? 0;
+    const displayModes = ["inline", "pip", "fullscreen", "modal"] as const;
     return (
       <div
         className="container"
@@ -219,13 +220,32 @@ function Widget() {
           <span style={{ fontSize: "1.25rem" }}>Counter: </span>
           <code style={{ fontSize: "1.25rem" }}>{currentCount}</code>
         </div>
-        <button
-          type="button"
-          className="btn"
-          onClick={() => setWidgetState((prev) => ({ count: (prev.count ?? 0) + 1 }))}
-        >
-          Increment from Modal
-        </button>
+        <div className="button-row" style={{ marginBottom: "1.5rem" }}>
+          <button
+            type="button"
+            className="btn"
+            onClick={() => setWidgetState((prev) => ({ count: (prev.count ?? 0) + 1 }))}
+          >
+            Increment from Modal
+          </button>
+        </div>
+
+        <div style={{ marginBottom: "0.5rem" }}>
+          <span style={{ fontSize: "1rem" }}>Current Display Mode: </span>
+          <code>{displayMode}</code>
+        </div>
+        <div className="button-row">
+          {displayModes.map((mode) => (
+            <button
+              key={mode}
+              type="button"
+              className={`btn ${displayMode === mode ? "" : "btn-outline"}`}
+              onClick={() => setDisplayMode(mode)}
+            >
+              {mode}
+            </button>
+          ))}
+        </div>
       </div>
     );
   }
