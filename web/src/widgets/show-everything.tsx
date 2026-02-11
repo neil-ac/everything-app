@@ -62,7 +62,7 @@ function Widget() {
   const user = useUser();
   const [displayMode] = useDisplayMode();
   const toolInfo = useToolInfo<"show-everything">();
-  const [widgetState] = useWidgetState({});
+  const [widgetState, setWidgetState] = useWidgetState({ count: 0 });
   const rawContext = (window as any).__SKYBRIDGE_CONTEXT__ || (window as any).__APPS_SDK_CONTEXT__ || (window as any).openai;
 
   // Collect current context
@@ -206,12 +206,26 @@ function Widget() {
     if (typeof params?.message === "string") {
       message = params.message;
     }
+    const currentCount = (widgetState as { count?: number }).count ?? 0;
     return (
       <div
         className="container"
-        style={{ textAlign: "center", fontSize: "1.5rem" }}
+        style={{ textAlign: "center", padding: "2rem" }}
       >
-        {message}
+        <div style={{ fontSize: "1.5rem", marginBottom: "1.5rem" }}>
+          {message}
+        </div>
+        <div style={{ marginBottom: "1rem" }}>
+          <span style={{ fontSize: "1.25rem" }}>Counter: </span>
+          <code style={{ fontSize: "1.25rem" }}>{currentCount}</code>
+        </div>
+        <button
+          type="button"
+          className="btn"
+          onClick={() => setWidgetState((prev) => ({ count: (prev.count ?? 0) + 1 }))}
+        >
+          Increment from Modal
+        </button>
       </div>
     );
   }
